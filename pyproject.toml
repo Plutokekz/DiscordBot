@@ -11,6 +11,7 @@ discord-py = {extras = ["voice"], version = "^2.1.0"}
 youtube-dl = "^2021.12.17"
 pyyaml = "^6.0"
 sqlalchemy = "^1.4.44"
+pylint = "^2.15.6"
 
 
 [build-system]
