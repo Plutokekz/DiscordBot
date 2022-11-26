@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class MusicPlayer:
-    __slots__ = ('bot', 'guild', 'channel', 'cog', 'queue', 'next', 'current')
+    __slots__ = ("bot", "guild", "channel", "cog", "queue", "next", "current")
     bot: commands.Bot
     guild: discord.Guild
     channel: discord.VoiceChannel
@@ -48,20 +48,23 @@ class MusicPlayer:
                 async with timeout(100):
                     audio_source = await self.queue.get()
             except asyncio.TimeoutError as e:
-                logger.error(f"cant get audio source from queue Timeout: {e}")
+                logger.error("cant get audio source from queue Timeout: %s", e)
                 return self.destroy(self.guild)
 
             self.current = audio_source
             await self.bot.change_presence(activity=audio_source.to_activity())
             if self.guild.voice_client is not None:
-                self.guild.voice_client.play(audio_source,
-                                             after=lambda error: (
-                                                 logger.warning(f"error while playing: {error}"),
-                                                 self.bot.loop.create_task(
-                                                     self.bot.change_presence(activity=discord.Activity())),
-                                                 self.bot.loop.call_soon_threadsafe(self.next.set)
-                                             ))
-                logger.info(f"playing {self.current.title}")
+                self.guild.voice_client.play(
+                    audio_source,
+                    after=lambda error: (
+                        logger.warning("error while playing: %s", error),
+                        self.bot.loop.create_task(
+                            self.bot.change_presence(activity=discord.Activity())
+                        ),
+                        self.bot.loop.call_soon_threadsafe(self.next.set),
+                    ),
+                )
+                logger.info("playing %s", self.current.title)
                 await self.channel.send(embed=audio_source.to_embed(), delete_after=30)
             await self.next.wait()
 
