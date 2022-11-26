@@ -1,5 +1,5 @@
-from database.database import mapper_registry, engine
 from sqlalchemy import Column, Integer, String, DateTime
+from database.database import mapper_registry, engine
 
 Base = mapper_registry.generate_base()
 
@@ -13,8 +13,10 @@ class SongRequest(Base):
     date = Column(DateTime)
 
     def __repr__(self):
-        return f"SongRequest(id={self.id!r}, title={self.title!r}, web_page={self.web_page!r}," \
-               f" requester={self.requester!r}, date={self.date!r})"
+        return (
+            f"SongRequest(id={self.id!r}, title={self.title!r}, web_page={self.web_page!r},"
+            f" requester={self.requester_id!r}, date={self.date!r})"
+        )
 
 
 mapper_registry.metadata.create_all(engine)
