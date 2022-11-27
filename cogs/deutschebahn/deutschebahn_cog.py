@@ -1,7 +1,9 @@
 import asyncio
 import logging
+import datetime
 
 import httpx
+import yaml
 from discord.ext import commands, tasks
 from sqlalchemy.orm import Session
 from sqlalchemy import delete
@@ -12,6 +14,11 @@ from database.database import engine
 from database.tabels.deutschebahn import RegisteredChannels
 
 logger = logging.getLogger(__name__)
+
+
+def _load_config():
+    with open("config/config.yml", "r", encoding="utf-8") as file:
+        return yaml.safe_load(file)["cogs"]["deutschebahn"]
 
 
 class DeutscheBahnCog(commands.Cog):
@@ -90,7 +97,7 @@ class DeutscheBahnCog(commands.Cog):
             )
         await ctx.message.delete(delay=10)
 
-    @tasks.loop(seconds=60)
+    @tasks.loop(time=datetime.time(hour=_load_config()['hour']))
     async def message_of_the_day_task(self):
         logger.info("running station of the day task")
         description, photos = await self.station.get_station_of_the_day()
