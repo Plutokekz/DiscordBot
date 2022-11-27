@@ -5,7 +5,6 @@ Base = mapper_registry.generate_base()
 
 
 class StationOfTheDay(Base):
-
     __tablename__ = "stations"
 
     country = Column(String)
@@ -15,12 +14,18 @@ class StationOfTheDay(Base):
     lon = Column(Float)
     title = Column(String)
 
+    def __repr__(self):
+        return f"StationOfTheDay(id={self.id}, title={self.title}, country={self.country}, inactive={self.inactive}," \
+               f" lat={self.lat}, lon={self.lon})"
+
 
 class RegisteredChannels(Base):
-
     __tablename__ = "channels"
 
     id = Column(Integer, primary_key=True)
+
+    def __repr__(self):
+        return f"RegisteredChannels(id={self.id})"
 
 
 mapper_registry.metadata.create_all(engine)
