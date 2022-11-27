@@ -25,6 +25,7 @@ class DeutscheBahnCog(commands.Cog):
         api = RS(httpx.AsyncClient())
         self.station = Station(api)
         self.session = Session(engine)
+        # pylint: disable=no-member
         self.message_of_the_day_task.start()
 
     @commands.has_permissions(administrator=True)
