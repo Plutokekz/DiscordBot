@@ -28,7 +28,7 @@ class InvalidVoiceChannel(VoiceConnectionError):
 
 
 def _load_config():
-    with open("config.yml", "r", encoding="utf-8") as file:
+    with open("config/config.yml", "r", encoding="utf-8") as file:
         return yaml.safe_load(file)["cogs"]["music"]
 
 
