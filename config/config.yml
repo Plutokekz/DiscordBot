@@ -26,3 +26,5 @@ cogs:
         description: "Beste"
         duration: 136
         url: "https://www.youtube.com/watch?v=LpEIfFuP3O4"
+  deutschebahn:
+    hour: 12
