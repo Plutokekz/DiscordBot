@@ -15,8 +15,10 @@ class StationOfTheDay(Base):
     title = Column(String)
 
     def __repr__(self):
-        return f"StationOfTheDay(id={self.id}, title={self.title}, country={self.country}, inactive={self.inactive}," \
-               f" lat={self.lat}, lon={self.lon})"
+        return (
+            f"StationOfTheDay(id={self.id}, title={self.title}, country={self.country}, inactive={self.inactive},"
+            f" lat={self.lat}, lon={self.lon})"
+        )
 
 
 class RegisteredChannels(Base):

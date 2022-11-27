@@ -35,7 +35,11 @@ class Station:
             active = "Die Station ist leider inaktiv und wird schon länger nicht mehr genutzt."
 
         short_code = ""
-        if station.shortCode is not None and station.shortCode != "NULL" and station.shortCode != "**":
+        if (
+            station.shortCode is not None
+            and station.shortCode != "NULL"
+            and station.shortCode != "**"
+        ):
             short_code = f"Sie besitzt die Abkürzung **{station.shortCode}**, welche Bahn angestelten genutzt wird."
 
         station_of_the_day = Embed(

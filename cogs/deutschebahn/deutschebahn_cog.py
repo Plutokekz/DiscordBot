@@ -97,7 +97,7 @@ class DeutscheBahnCog(commands.Cog):
             )
         await ctx.message.delete(delay=10)
 
-    @tasks.loop(time=datetime.time(hour=_load_config()['hour']))
+    @tasks.loop(time=datetime.time(hour=_load_config()["hour"]))
     async def message_of_the_day_task(self):
         logger.info("running station of the day task")
         description, photos = await self.station.get_station_of_the_day()
