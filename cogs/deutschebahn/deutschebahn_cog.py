@@ -6,7 +6,7 @@ from discord.ext import commands, tasks
 from sqlalchemy.orm import Session
 from sqlalchemy import delete
 
-from cogs.deutschebahn.RSAPI.api import RS
+from cogs.deutschebahn.rs_api.api import RS
 from cogs.deutschebahn.station import Station
 from database.database import engine
 from database.tabels.deutschebahn import RegisteredChannels

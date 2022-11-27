@@ -5,8 +5,8 @@ from typing import List, Tuple
 
 import discord
 from discord.embeds import Embed
-from cogs.deutschebahn.RSAPI.api import RS
-from cogs.deutschebahn.RSAPI.model import Station as ST
+from cogs.deutschebahn.rs_api.api import RS
+from cogs.deutschebahn.rs_api.model import Station as ST
 
 logger = logging.getLogger(__name__)
 
