@@ -37,13 +37,21 @@ class DeutscheBahnCog(commands.Cog):
         """
         channel_id = ctx.message.channel.id
         if self.session.query(RegisteredChannels).filter_by(id=channel_id).first():
-            logger.warning("Channel %s is already subscribed to station of the day", ctx.channel.name)
-            await ctx.send(f"Kanal {ctx.channel.name} ist schon angemeldet", delete_after=10)
+            logger.warning(
+                "Channel %s is already subscribed to station of the day",
+                ctx.channel.name,
+            )
+            await ctx.send(
+                f"Kanal {ctx.channel.name} ist schon angemeldet", delete_after=10
+            )
         else:
             self.session.add(RegisteredChannels(id=channel_id))
             self.session.commit()
             logger.info("Channel %s subscribed to station of the day", ctx.channel.name)
-            await ctx.send(f"Kanal {ctx.channel.name} ist angemeldet, für Station des Tages", delete_after=10)
+            await ctx.send(
+                f"Kanal {ctx.channel.name} ist angemeldet, für Station des Tages",
+                delete_after=10,
+            )
         await ctx.message.delete(delay=10)
 
     @commands.has_permissions(administrator=True)
@@ -55,15 +63,30 @@ class DeutscheBahnCog(commands.Cog):
         :return:
         """
         channel_id = ctx.message.channel.id
-        if self.session.query(RegisteredChannels).filter_by(id=channel_id).first() is None:
-            logger.warning("Channel %s is not subscribed to station of the day, unsubscribe not possible",
-                           ctx.channel.name)
-            await ctx.send(f"Kanal {ctx.channel.name} ist nicht angemeldet, abmelden nicht möglich", delete_after=10)
+        if (
+            self.session.query(RegisteredChannels).filter_by(id=channel_id).first()
+            is None
+        ):
+            logger.warning(
+                "Channel %s is not subscribed to station of the day, unsubscribe not possible",
+                ctx.channel.name,
+            )
+            await ctx.send(
+                f"Kanal {ctx.channel.name} ist nicht angemeldet, abmelden nicht möglich",
+                delete_after=10,
+            )
         else:
-            self.session.execute(delete(RegisteredChannels).where(RegisteredChannels.id == channel_id))
+            self.session.execute(
+                delete(RegisteredChannels).where(RegisteredChannels.id == channel_id)
+            )
             self.session.commit()
-            logger.info("Channel %s unsubscribed to station of the day", ctx.channel.name)
-            await ctx.send(f"Kanal {ctx.channel.name} ist abgemeldet, für Station des Tages", delete_after=10)
+            logger.info(
+                "Channel %s unsubscribed to station of the day", ctx.channel.name
+            )
+            await ctx.send(
+                f"Kanal {ctx.channel.name} ist abgemeldet, für Station des Tages",
+                delete_after=10,
+            )
         await ctx.message.delete(delay=10)
 
     @tasks.loop(seconds=60)

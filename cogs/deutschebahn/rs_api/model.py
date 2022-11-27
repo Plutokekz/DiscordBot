@@ -11,9 +11,9 @@ from pydantic import AnyUrl, BaseModel, Field
 
 
 class Type(Enum):
-    android = 'android'
-    ios = 'ios'
-    web = 'web'
+    android = "android"
+    ios = "ios"
+    web = "web"
 
 
 class ProviderApp(BaseModel):
@@ -24,23 +24,23 @@ class ProviderApp(BaseModel):
 
 class Country(BaseModel):
     active: bool = Field(
-        ..., description='Is this an active country where we collect photos?'
+        ..., description="Is this an active country where we collect photos?"
     )
-    code: str = Field(..., description='Two letter country code')
-    email: Optional[str] = Field(None, description='Email Address to send photos to')
-    name: str = Field(..., description='Name of the country')
+    code: str = Field(..., description="Two letter country code")
+    email: Optional[str] = Field(None, description="Email Address to send photos to")
+    name: str = Field(..., description="Name of the country")
     overrideLicense: Optional[str] = Field(
-        None, description='if a country needs a special license'
+        None, description="if a country needs a special license"
     )
     providerApps: Optional[List[ProviderApp]] = Field(
-        None, description='array with links to provider apps'
+        None, description="array with links to provider apps"
     )
     timetableUrlTemplate: Optional[str] = Field(
         None,
-        description='URL template for the timetable, contains {title}, {id} and\n{DS100} placeholders which need to be replaced\n',
+        description="URL template for the timetable, contains {title}, {id} and\n{DS100} placeholders which need to be replaced\n",
     )
     twitterTags: Optional[str] = Field(
-        None, description='Twitter Tags when sharing the photo on Twitter'
+        None, description="Twitter Tags when sharing the photo on Twitter"
     )
 
 
@@ -49,77 +49,78 @@ class CountryList(BaseModel):
 
 
 class License(BaseModel):
-    id: str = Field(..., description='Unique id of the license', example='CC0')
+    id: str = Field(..., description="Unique id of the license", example="CC0")
     name: str = Field(
         ...,
-        description='Name of the license to display at the photo',
-        example='CC0 1.0 Universell (CC0 1.0)',
+        description="Name of the license to display at the photo",
+        example="CC0 1.0 Universell (CC0 1.0)",
     )
     url: AnyUrl = Field(
         ...,
-        description='URL of the license to link to from the photo',
-        example='https://creativecommons.org/publicdomain/zero/1.0/',
+        description="URL of the license to link to from the photo",
+        example="https://creativecommons.org/publicdomain/zero/1.0/",
     )
 
 
 class Photographer(BaseModel):
-    name: str = Field(..., description='Username of the photographer')
+    name: str = Field(..., description="Username of the photographer")
     url: Optional[AnyUrl] = Field(
-        None, description='Link to the photographers social media account or homepage'
+        None, description="Link to the photographers social media account or homepage"
     )
 
 
 class Photo(BaseModel):
     createdAt: int = Field(
         ...,
-        description='Timestamp when the photo was created in the railway-stations\ndatabase (Epoche milliseconds since 1.1.1970)\n',
+        description="Timestamp when the photo was created in the railway-stations\ndatabase (Epoche milliseconds since 1.1.1970)\n",
     )
-    id: int = Field(..., description='Unique id of a photo')
-    license: str = Field(..., description='Id of the license used for this photo')
+    id: int = Field(..., description="Unique id of a photo")
+    license: str = Field(..., description="Id of the license used for this photo")
     outdated: Optional[bool] = Field(
-        False, description='Indicates if this photo is outdated'
+        False, description="Indicates if this photo is outdated"
     )
     path: str = Field(
         ...,
-        description='URL path to the photo, to be used together with the photoBaseUrl',
+        description="URL path to the photo, to be used together with the photoBaseUrl",
     )
-    photographer: str = Field(..., description='Name of the photographer')
+    photographer: str = Field(..., description="Name of the photographer")
 
 
 class Station(BaseModel):
-    country: str = Field(..., description='2 letter code of the country', example='uk')
+    country: str = Field(..., description="2 letter code of the country", example="uk")
     id: str = Field(
-        ..., description='Id of the station within the country', example='7054260'
+        ..., description="Id of the station within the country", example="7054260"
     )
     inactive: Optional[bool] = Field(
-        False, description='Indicates if this station is inactive'
+        False, description="Indicates if this station is inactive"
     )
-    lat: float = Field(..., description='Latitude of the station')
-    lon: float = Field(..., description='Longitute of the station')
+    lat: float = Field(..., description="Latitude of the station")
+    lon: float = Field(..., description="Longitute of the station")
     photos: List[Photo] = Field(
         ...,
-        description='Photos of the station. If more than one photo is given, the first one is the primary photo. List might be empty or only the primary photo provided.',
+        description="Photos of the station. If more than one photo is given, the first one is the primary photo. List "
+        "might be empty or only the primary photo provided.",
     )
     shortCode: Optional[str] = Field(
         None,
-        description='Provider specific short code of the station, e.g. RIL100 or DS100 for german stations',
+        description="Provider specific short code of the station, e.g. RIL100 or DS100 for german stations",
     )
     title: str = Field(
-        ..., description='Title of the station', example='London Victoria'
+        ..., description="Title of the station", example="London Victoria"
     )
 
 
 class Model(BaseModel):
     licenses: List[License] = Field(
-        ..., description='List of used licenses, might be empty if no photos available'
+        ..., description="List of used licenses, might be empty if no photos available"
     )
     photoBaseUrl: str = Field(
         ...,
-        description='Base URL of all photos',
-        example='https://api.railway-stations.org/photos/',
+        description="Base URL of all photos",
+        example="https://api.railway-stations.org/photos/",
     )
     photographers: List[Photographer] = Field(
         ...,
-        description='List of all photographers, might be empty if no photos available',
+        description="List of all photographers, might be empty if no photos available",
     )
-    stations: List[Station] = Field(..., description='List of the stations')
+    stations: List[Station] = Field(..., description="List of the stations")
