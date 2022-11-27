@@ -20,7 +20,7 @@ async def on_ready():
 
 
 async def main():
-    for extension in ["cogs.music.music_cog"]:
+    for extension in ["cogs.music.music_cog", "cogs.deutschebahn.deutschebahn_cog"]:
         await client.load_extension(extension)
         logger.info("loaded extension: %s", extension)
     await client.start(TOKEN)
