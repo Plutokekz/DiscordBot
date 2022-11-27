@@ -91,12 +91,12 @@ class DeutscheBahnCog(commands.Cog):
 
     @tasks.loop(seconds=60)
     async def message_of_the_day_task(self):
-        logger.info(f"running station of the day task")
+        logger.info("running station of the day task")
         description, photos = await self.station.get_station_of_the_day()
         for channel_id in self.session.query(RegisteredChannels).all():
             logger.info(channel_id)
             if (channel := self.bot.get_channel(channel_id.id)) is not None:
-                logger.info(f"sending station of the day to: {channel}")
+                logger.info("sending station of the day to: %s", channel)
                 await channel.send(embed=description)
                 await channel.send(embeds=photos)
         await asyncio.sleep(10)
