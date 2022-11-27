@@ -1,0 +1,11 @@
+services:
+  discord-bot:
+    image: discord-bot
+    networks:
+      - discord-bot-tier
+    volumes:
+      - ./config:/config
+    environment:
+      DiscordToken: "Your Discord Token"
+networks:
+  discord-bot-tier: {}
