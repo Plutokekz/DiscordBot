@@ -35,7 +35,7 @@ class Station:
             active = "Die Station ist leider inaktiv und wird schon länger nicht mehr genutzt."
 
         short_code = ""
-        if station.shortCode is not None and station.shortCode != "NULL":
+        if station.shortCode is not None and station.shortCode != "NULL" and station.shortCode != "**":
             short_code = f"Sie besitzt die Abkürzung **{station.shortCode}**, welche Bahn angestelten genutzt wird."
 
         station_of_the_day = Embed(
@@ -44,7 +44,7 @@ class Station:
             title=station.title,
             description=f"Diese wunder schöne Station aus {country.name}, ist heute die Station "
             f"des Tages. Sie befindet sich genau [hier](https://www.google.com/maps/"
-            f"@{station.lat},{station.lon},18z). {active} {short_code}",
+            f"@{station.lat},{station.lon},15z). {active} {short_code}",
         )
         _photos = []
         for photo in station.photos[: min(4, len(station.photos))]:
