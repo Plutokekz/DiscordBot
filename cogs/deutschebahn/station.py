@@ -39,6 +39,7 @@ class Station:
             station.shortCode is not None
             and station.shortCode != "NULL"
             and station.shortCode != "**"
+            and station.shortCode
         ):
             short_code = f"Sie besitzt die Abkürzung **{station.shortCode}**, welche Bahn angestelten genutzt wird."
 
