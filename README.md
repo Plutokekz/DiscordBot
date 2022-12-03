@@ -6,6 +6,7 @@ A discord bot for the DeutscheBahn2 discord server
 * play Youtube videos/playlists
   * change the status to the current playing song
   * have a look at the queued songs
+  * a database with requested song's and requester
 * Post a Station of the Day message to subscribed channels in a specified interval
 
 # Installation
