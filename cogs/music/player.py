@@ -11,7 +11,16 @@ logger = logging.getLogger(__name__)
 
 
 class MusicPlayer:
-    __slots__ = ("bot", "guild", "channel", "cog", "queue", "next", "current", "voice_client")
+    __slots__ = (
+        "bot",
+        "guild",
+        "channel",
+        "cog",
+        "queue",
+        "next",
+        "current",
+        "voice_client",
+    )
     bot: commands.Bot
     guild: discord.Guild
     channel: discord.VoiceChannel
