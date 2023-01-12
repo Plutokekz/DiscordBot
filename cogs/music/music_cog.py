@@ -4,7 +4,7 @@ import datetime
 
 import discord
 import yaml
-import youtube_dl.YoutubeDL
+import yt_dlp.YoutubeDL
 from discord.ext import commands
 from discord.ext.commands import MissingAnyRole, CommandNotFound
 from discord.utils import get
@@ -33,17 +33,15 @@ def _load_config():
 
 
 class Player(commands.Cog):
-    __slots__ = ("bot", "players", "voice_client", "config")
+    __slots__ = ("bot", "players", "config")
 
     bot: commands.Bot
     players: Dict[int, MusicPlayer]
-    voice_client: discord.VoiceClient | None
     config: Dict[str, Any]
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.players = {}
-        self.voice_client = None
         self.config = _load_config()
         self.session = Session(engine)
 
@@ -71,7 +69,7 @@ class Player(commands.Cog):
                 ctx=ctx,
                 loop=ctx.bot.loop,
                 ffmpeg_options=self.config["online"]["ffmpeg_options"],
-                ytdl=youtube_dl.YoutubeDL(self.config["online"]["ytdl_format_options"]),
+                ytdl=yt_dlp.YoutubeDL(self.config["online"]["ytdl_format_options"]),
                 default_info=self.config["online"]["default_info"],
             ):
                 logger.info("%s is queuing %s", ctx.message.author.name, source.title)
@@ -104,22 +102,24 @@ class Player(commands.Cog):
                 raise VoiceConnectionError(
                     f"{ctx.message.author.name} is not in a Voice channel"
                 ) from e
-        if ctx.voice_client is None or self.voice_client is None:
-            self.voice_client = await channel.connect()
+        player = self.get_player(ctx)
+        if ctx.voice_client is None or player.voice_client is None:
+            player.voice_client = await channel.connect()
             logger.info("%s connect with %s", self.bot.user.name, channel)
             await ctx.send(f"Is am Bahnsteig **{channel}** erschienen", delete_after=10)
             return
-        if self.voice_client.channel.id == channel.id:
+        if player.voice_client.channel.id == channel.id:
             return
-        await self.voice_client.move_to(channel)
+        await player.voice_client.move_to(channel)
         logger.info("%s moved to %s", self.bot.user.name, channel)
         await ctx.send(f"Gleis wechsel zu: **{channel}**", delete_after=10)
 
     @commands.command(name="pause")
     async def pause(self, ctx: commands.Context) -> None:
         """Pauses the currently playing song."""
-        if self.voice_client and self.voice_client.is_playing():
-            self.voice_client.pause()
+        player = self.get_player(ctx)
+        if player.voice_client and player.voice_client.is_playing():
+            player.voice_client.pause()
             emoji = get(self.bot.emojis, name="DarksideDeutscheBahn")
             await ctx.message.add_reaction(emoji)
             logger.info("%s paused", ctx.message.author.name)
@@ -128,8 +128,9 @@ class Player(commands.Cog):
     @commands.command(name="resume")
     async def resume(self, ctx: commands.Context) -> None:
         """Resumes a currently paused song."""
-        if self.voice_client and self.voice_client.is_paused():
-            self.voice_client.resume()
+        player = self.get_player(ctx)
+        if player.voice_client and player.voice_client.is_paused():
+            player.voice_client.resume()
             emoji = get(self.bot.emojis, name="DeutscheBahn")
             await ctx.message.add_reaction(emoji)
             logger.info("%s resumed", ctx.message.author.name)
@@ -137,15 +138,17 @@ class Player(commands.Cog):
 
     @commands.command(name="skip")
     async def skip(self, ctx: commands.Context) -> None:
-        if self.voice_client and self.voice_client.is_playing():
-            self.voice_client.stop()
+        player = self.get_player(ctx)
+        if player.voice_client and player.voice_client.is_playing():
+            player.voice_client.stop()
             logger.info("%s skipped", ctx.message.author.name)
         await ctx.message.delete(delay=10)
 
     @commands.command(name="stop")
     async def stop(self, ctx: commands.Context) -> None:
         """Stops the playing or paused song."""
-        if self.voice_client and self.voice_client.is_connected():
+        player = self.get_player(ctx)
+        if player.voice_client and player.voice_client.is_connected():
             emoji = get(self.bot.emojis, name="SaltyCaptin")
             logger.info("%s stopped", ctx.message.author.name)
             await ctx.message.add_reaction(emoji)
