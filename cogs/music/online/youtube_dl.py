@@ -3,14 +3,14 @@ from typing import Dict, Any
 import logging
 
 import discord
-import youtube_dl
+import yt_dlp
 from discord.ext import commands
-from youtube_dl import YoutubeDL
+from yt_dlp import YoutubeDL
 
 logger = logging.getLogger(__name__)
 
 # Suppress noise about console usage from errors
-youtube_dl.utils.bug_reports_message = lambda: ""
+yt_dlp.utils.bug_reports_message = lambda: ""
 
 
 class YTDLError(Exception):
