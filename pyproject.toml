@@ -8,16 +8,16 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 discord-py = {extras = ["voice"], version = "^2.1.0"}
-youtube-dl = "^2021.12.17"
 pyyaml = "^6.0"
 sqlalchemy = "^1.4.44"
 pylint = "^2.15.6"
 black = "^22.10.0"
 pydantic = "^1.10.2"
-datamodel-code-generator = "^0.14.0"
 httpx = "^0.23.1"
 async-mvg-api = "^0.1.1"
 markdownify = "^0.11.6"
+yt-dlp = "^2023.1.6"
+setuptools = "^65.7.0"
 
 
 [build-system]
