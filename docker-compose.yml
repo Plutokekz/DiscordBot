@@ -1,6 +1,7 @@
 services:
   discord-bot:
     image: discord-bot
+    restart: unless-stopped
     networks:
       - discord-bot-tier
     volumes:
