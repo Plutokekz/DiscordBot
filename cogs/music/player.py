@@ -5,14 +5,22 @@ from async_timeout import timeout
 import discord
 from discord.ext import commands
 
-# from cogs.music.music_cog import Player
 from cogs.music.online.youtube_dl import AudioSource
 
 logger = logging.getLogger(__name__)
 
 
 class MusicPlayer:
-    __slots__ = ("bot", "guild", "channel", "cog", "queue", "next", "current")
+    __slots__ = (
+        "bot",
+        "guild",
+        "channel",
+        "cog",
+        "queue",
+        "next",
+        "current",
+        "voice_client",
+    )
     bot: commands.Bot
     guild: discord.Guild
     channel: discord.VoiceChannel
@@ -20,6 +28,7 @@ class MusicPlayer:
     queue: asyncio.Queue
     next: asyncio.Event
     current: AudioSource | None
+    voice_client: discord.VoiceClient | None
 
     def __init__(self, ctx: commands.Context):
         self.bot = ctx.bot
@@ -53,8 +62,8 @@ class MusicPlayer:
 
             self.current = audio_source
             await self.bot.change_presence(activity=audio_source.to_activity())
-            if self.guild.voice_client is not None:
-                self.guild.voice_client.play(
+            if self.voice_client is not None:
+                self.voice_client.play(
                     audio_source,
                     after=lambda error: (
                         logger.warning("error while playing: %s", error),
