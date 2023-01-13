@@ -8,6 +8,39 @@ A discord bot for the DeutscheBahn2 discord server
   * have a look at the queued songs
   * a database with requested song's and requester
 * Post a Station of the Day message to subscribed channels in a specified interval
+* Post the current delays of the mvg in the subscribed channels
+
+## Discord Commands
+
+### Music 
+````
+!play   <your link / youtube search>
+!pause  pause the current song
+!resume resume the current song
+!stop   stop the bot and discord the current queue
+!queue  show waht songs are in the queue
+!skip   stop the current playingt song and play the next one in the queue
+````
+
+### Deutschebahn
+
+````
+!subscribe   Subscribe to the Station of the day message with this channel
+!unsubscribe Unsubscribe to the Station of the day message with this channel
+````
+
+An example Station of the day message. You can control when the station message should be [posted](#hour)
+![img.png](images/img.png)
+
+### Mvg
+
+````
+!subscribe-slim   Subscribe to the mvg disruption ticker
+!unsubscribe-slim Unsubscribe to the mvg disruption ticker
+````
+
+Example message:
+![img_1.png](images/img_1.png)
 
 # Installation
 
