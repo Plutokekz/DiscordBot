@@ -27,6 +27,7 @@ class MyMarkdownConverter(MarkdownConverter):
 
 class TypeOfTransportConverter(commands.Converter):
     async def convert(self, ctx, argument) -> str | None:
+        # pylint: disable=unused-argument
         argument = argument.lower()
         if argument in ["s", "sbahn"]:
             return "SBAHN"
