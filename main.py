@@ -10,7 +10,7 @@ discord.utils.setup_logging(level=logging.INFO, root=True)
 
 TOKEN = os.environ["DiscordToken"]
 intents = discord.Intents.all()
-
+# test the integration
 client = commands.Bot(".", intents=intents)
 
 
