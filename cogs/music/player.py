@@ -1,5 +1,7 @@
 import asyncio
 import logging
+from asyncio import Task
+from typing import Coroutine
 
 from async_timeout import timeout
 import discord
@@ -20,6 +22,7 @@ class MusicPlayer:
         "next",
         "current",
         "voice_client",
+        "player_tasks"
     )
     bot: commands.Bot
     guild: discord.Guild
@@ -29,6 +32,7 @@ class MusicPlayer:
     next: asyncio.Event
     current: AudioSource | None
     voice_client: discord.VoiceClient | None
+    player_tasks: set | None
 
     def __init__(self, ctx: commands.Context):
         self.bot = ctx.bot
@@ -37,7 +41,8 @@ class MusicPlayer:
         self.cog = ctx.cog
         self.queue = asyncio.Queue()
         self.next = asyncio.Event()
-        self.bot.loop.create_task(self.player_loop())
+        self.player_tasks = set()
+        self.creat_referenced_task(self.player_loop())
 
     async def get_playlist(self):
         size = self.queue.qsize()
@@ -58,7 +63,9 @@ class MusicPlayer:
                     audio_source = await self.queue.get()
             except asyncio.TimeoutError as e:
                 logger.error("cant get audio source from queue Timeout: %s", e)
-                return self.destroy(self.guild)
+                task = self.destroy(self.guild)
+                self.creat_referenced_task(task)
+                return task
 
             self.current = audio_source
             await self.bot.change_presence(activity=audio_source.to_activity())
@@ -67,9 +74,7 @@ class MusicPlayer:
                     audio_source,
                     after=lambda error: (
                         logger.warning("error while playing: %s", error),
-                        self.bot.loop.create_task(
-                            self.bot.change_presence(activity=discord.Activity())
-                        ),
+                        self.creat_referenced_task(self.bot.change_presence(activity=discord.Activity())),
                         self.bot.loop.call_soon_threadsafe(self.next.set),
                     ),
                 )
@@ -79,6 +84,11 @@ class MusicPlayer:
 
             audio_source.cleanup()
             self.current = None
+
+    def creat_referenced_task(self, coro: Coroutine):
+        task = self.bot.loop.create_task(coro)
+        self.player_tasks.add(task)
+        task.add_done_callback(self.player_tasks.discard)
 
     def destroy(self, guild: discord.Guild):
         """Disconnect and cleanup the player."""
