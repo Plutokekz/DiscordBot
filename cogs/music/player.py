@@ -1,6 +1,5 @@
 import asyncio
 import logging
-from asyncio import Task
 from typing import Coroutine
 
 from async_timeout import timeout
@@ -22,7 +21,7 @@ class MusicPlayer:
         "next",
         "current",
         "voice_client",
-        "player_tasks"
+        "player_tasks",
     )
     bot: commands.Bot
     guild: discord.Guild
@@ -74,7 +73,9 @@ class MusicPlayer:
                     audio_source,
                     after=lambda error: (
                         logger.warning("error while playing: %s", error),
-                        self.creat_referenced_task(self.bot.change_presence(activity=discord.Activity())),
+                        self.creat_referenced_task(
+                            self.bot.change_presence(activity=discord.Activity())
+                        ),
                         self.bot.loop.call_soon_threadsafe(self.next.set),
                     ),
                 )
