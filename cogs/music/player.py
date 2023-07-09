@@ -29,7 +29,7 @@ class MusicPlayer:
     guild: discord.Guild
     channel: discord.VoiceChannel
     cog: mc.Player | None
-    queue: asyncio.Queue
+    queue: asyncio.Queue[AudioSource]
     next: asyncio.Event
     current: AudioSource | None
     voice_client: discord.VoiceClient | None
@@ -84,8 +84,10 @@ class MusicPlayer:
                 logger.info("playing %s", self.current.title)
                 await self.channel.send(embed=audio_source.to_embed(), delete_after=30)
             await self.next.wait()
-
-            audio_source.cleanup()
+            try:
+                audio_source.cleanup()
+            except ValueError as e:
+                logger.error("error while cleaning up audio source: %s", e)
             self.current = None
 
     def creat_referenced_task(self, coro: Coroutine):
