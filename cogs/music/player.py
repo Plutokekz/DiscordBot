@@ -1,3 +1,5 @@
+from __future__ import annotations
+import cogs.music.music_cog as mc
 import asyncio
 import logging
 from typing import Coroutine
@@ -26,8 +28,8 @@ class MusicPlayer:
     bot: commands.Bot
     guild: discord.Guild
     channel: discord.VoiceChannel
-    cog: commands.Cog | None
-    queue: asyncio.Queue
+    cog: mc.Player | None
+    queue: asyncio.Queue[AudioSource]
     next: asyncio.Event
     current: AudioSource | None
     voice_client: discord.VoiceClient | None
@@ -82,8 +84,10 @@ class MusicPlayer:
                 logger.info("playing %s", self.current.title)
                 await self.channel.send(embed=audio_source.to_embed(), delete_after=30)
             await self.next.wait()
-
-            audio_source.cleanup()
+            try:
+                audio_source.cleanup()
+            except ValueError as e:
+                logger.error("error while cleaning up audio source: %s", e)
             self.current = None
 
     def creat_referenced_task(self, coro: Coroutine):
@@ -91,6 +95,6 @@ class MusicPlayer:
         self.player_tasks.add(task)
         task.add_done_callback(self.player_tasks.discard)
 
-    def destroy(self, guild: discord.Guild):
+    async def destroy(self, guild: discord.Guild):
         """Disconnect and cleanup the player."""
-        return self.bot.loop.create_task(self.cog.cleanup(guild))
+        return await self.cog.cleanup(guild)
