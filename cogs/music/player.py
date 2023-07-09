@@ -1,3 +1,5 @@
+from __future__ import annotations
+import cogs.music.music_cog as mc
 import asyncio
 import logging
 from typing import Coroutine
@@ -26,7 +28,7 @@ class MusicPlayer:
     bot: commands.Bot
     guild: discord.Guild
     channel: discord.VoiceChannel
-    cog: commands.Cog | None
+    cog: mc.Player | None
     queue: asyncio.Queue
     next: asyncio.Event
     current: AudioSource | None
@@ -91,6 +93,6 @@ class MusicPlayer:
         self.player_tasks.add(task)
         task.add_done_callback(self.player_tasks.discard)
 
-    def destroy(self, guild: discord.Guild):
+    async def destroy(self, guild: discord.Guild):
         """Disconnect and cleanup the player."""
-        return self.bot.loop.create_task(self.cog.cleanup(guild))
+        return await self.cog.cleanup(guild)
