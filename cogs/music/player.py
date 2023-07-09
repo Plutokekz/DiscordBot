@@ -1,13 +1,14 @@
 from __future__ import annotations
-import cogs.music.music_cog as mc
+
 import asyncio
 import logging
 from typing import Coroutine
 
-from async_timeout import timeout
 import discord
+from async_timeout import timeout
 from discord.ext import commands
 
+import cogs.music.music_cog as mc
 from cogs.music.online.youtube_dl import AudioSource
 
 logger = logging.getLogger(__name__)
