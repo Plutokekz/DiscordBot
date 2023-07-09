@@ -2,6 +2,7 @@ import logging
 import datetime
 
 import discord
+import httpx
 import yaml
 from discord.ext import commands, tasks
 from mvg_api.models.ticker import Ticker
@@ -144,8 +145,18 @@ class MVGCog(commands.Cog):
         await ctx.message.delete(delay=10)
 
     async def generate_slim(self) -> discord.Embed:
-        slim_list = await self.api.get_slim()
-
+        try:
+            slim_list = await self.api.get_slim()
+        except httpx.HTTPError as e:
+            logger.error("Error while fetching slim list: %s", e)
+            return discord.Embed(
+                colour=discord.Colour.red(),
+                color=discord.Color.red(),
+                title="Betriebsmeldungen",
+                description="Es ist ein Fehler aufgetreten, bitte versuchen sie es später erneut",
+                timestamp=datetime.datetime.now(),
+                url="https://www.mvg.de/dienste/betriebsaenderungen.html",
+            ).set_footer(text="Letzte Aktualisierung")
         if len(slim_list.__root__) == 0:
             return discord.Embed(
                 colour=discord.Colour.yellow(),
@@ -156,7 +167,7 @@ class MVGCog(commands.Cog):
                 " eine gute fahrt.",
                 timestamp=datetime.datetime.now(),
                 url="https://www.mvg.de/dienste/betriebsaenderungen.html",
-            ).set_footer(text="Letzte Aktualisierung um")
+            ).set_footer(text="Letzte Aktualisierung")
 
         description = f"Es liegen momentan {len(slim_list.__root__)} Betriebsmeldungen oder Störungen vor."
         if len(slim_list.__root__) == 1:
