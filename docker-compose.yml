@@ -1,6 +1,7 @@
 services:
   discord-bot:
-    image: discord-bot
+    build: .
+    command: poetry run python main.py
     restart: unless-stopped
     networks:
       - discord-bot-tier
