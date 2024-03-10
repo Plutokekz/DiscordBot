@@ -46,6 +46,8 @@ class Config(BaseModel):
 
     hour: int = Field(default=12, enaliasv="HOUR")
 
+    command_prefix: str = Field(default="!", alias="COMMAND_PREFIX")
+
     @property
     def ytdl_format_options(self) -> Dict[str, str]:
         return {

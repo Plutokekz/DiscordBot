@@ -3,6 +3,8 @@ import logging
 import os
 import discord
 from discord.ext import commands
+
+from bot.config import config
 from bot.logger import logger
 
 discord.utils.setup_logging(level=logging.INFO, root=True)
@@ -11,7 +13,7 @@ discord.utils.setup_logging(level=logging.INFO, root=True)
 TOKEN = os.environ["DiscordToken"]
 intents = discord.Intents.all()
 # test the integration
-client = commands.Bot("!", intents=intents)
+client = commands.Bot(config.command_prefix, intents=intents)
 
 
 @client.event
