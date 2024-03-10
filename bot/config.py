@@ -10,9 +10,9 @@ def load_config():
     return Config(**os.environ)
 
 
-loaded = False
-config = None
+LOADED = False
+config = None  # pylint: disable=invalid-name
 
-if not loaded:
+if not LOADED:
     config = load_config()
-    loaded = True
+    LOADED = True

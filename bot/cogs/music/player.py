@@ -6,11 +6,11 @@ from typing import Coroutine, TYPE_CHECKING
 
 import discord
 from discord.ext import commands
+from bot.cogs.music.online.youtube_dl import AudioSource
+from bot.logger import logger
 
 if TYPE_CHECKING:
     import bot.cogs.music.music_cog as mc
-from bot.cogs.music.online.youtube_dl import AudioSource
-from bot.logger import logger
 
 
 class MusicPlayer:

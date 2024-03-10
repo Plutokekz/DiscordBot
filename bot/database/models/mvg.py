@@ -2,7 +2,7 @@ from sqlalchemy import Integer
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase
 
 
-class Base(DeclarativeBase):
+class Base(DeclarativeBase):  # pylint: disable=too-few-public-methods
     pass
 
 
