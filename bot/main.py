@@ -1,6 +1,5 @@
 import asyncio
 import logging
-from bot.logger import logger
 import os
 import discord
 from discord.ext import commands
@@ -22,9 +21,9 @@ async def on_ready():
 
 async def main():
     for extension in [
-        "cogs.music.music_cog",
-        "cogs.deutschebahn.deutschebahn_cog",
-        "cogs.mvg.mvg_cog",
+        "bot.cogs.music.music_cog",
+        "bot.cogs.deutschebahn.deutschebahn_cog",
+        "bot.cogs.mvg.mvg_cog",
     ]:
         await client.load_extension(extension)
         logger.info(f"loaded extension: {extension}")
