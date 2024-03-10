@@ -1,7 +1,7 @@
 from typing import Dict, Any
 
 import httpx
-from cogs.deutschebahn.rs_api.model import CountryList, Model
+from bot.cogs.deutschebahn.rs_api.model import CountryList, Model
 
 
 class RS:
