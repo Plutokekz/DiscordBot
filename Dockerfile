@@ -1,16 +1,14 @@
-FROM python:3.11
+FROM python:3.11-slim
 
-RUN apt-get update
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install -y -qq build-essential ffmpeg curl
-RUN curl -sSL https://install.python-poetry.org | python3 -
-ENV PATH = "${PATH}:/root/.local/bin"
+RUN apt update
+RUN apt install -y build-essential ffmpeg curl
+RUN pip install poetry
 
 WORKDIR /
 
-COPY poetry.lock ./
 COPY pyproject.toml ./
 
-RUN poetry install
-COPY . .
+RUN poetry install --no-root
+COPY bot ./bot
 
-CMD ["poetry", "run", "python", "main.py"]
+CMD ["poetry", "run", "python", "-m", "bot.main"]

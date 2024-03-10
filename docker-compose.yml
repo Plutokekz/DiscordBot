@@ -1,13 +1,10 @@
 services:
   discord-bot:
-    build: .
-    command: poetry run python main.py
+    build:
+        context: .
+        dockerfile: Dockerfile
     restart: unless-stopped
-    networks:
-      - discord-bot-tier
     volumes:
       - ./config:/config
-    environment:
-      DiscordToken: "Your Discord Token"
-networks:
-  discord-bot-tier: {}
+    env_file:
+      - .env
