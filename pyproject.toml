@@ -8,18 +8,20 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 discord-py = {extras = ["voice"], version = "^2.1.0"}
-pyyaml = "^6.0"
 sqlalchemy = "^2.0.18"
-pylint = "^2.15.6"
-black = "^22.10.0"
-pydantic = "^1.10.2"
-httpx = "^0.23.1"
-async-mvg-api = "^0.1.1"
+pydantic = ">1.10.2"
+httpx = ">0.23.1"
+async-mvg-api = "^0.2.3"
 markdownify = "^0.11.6"
 yt-dlp = "^2023.7.6"
-setuptools = "^68.0.0"
 matplotlib = "^3.6.3"
+alembic = "^1.11.3"
+python-dotenv = "^1.0.1"
+loguru = "^0.7.2"
 
+[tool.poetry.group.dev.dependencies]
+black = "^24.2.0"
+pylint = "^3.1.0"
 
 [build-system]
 requires = ["poetry-core"]

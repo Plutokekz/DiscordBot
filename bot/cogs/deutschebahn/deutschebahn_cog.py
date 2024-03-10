@@ -1,24 +1,17 @@
 import asyncio
-import logging
 import datetime
 
 import httpx
-import yaml
 from discord.ext import commands, tasks
 from sqlalchemy.orm import Session
 from sqlalchemy import delete
 
-from cogs.deutschebahn.rs_api.api import RS
-from cogs.deutschebahn.station import Station
-from database.database import engine
-from database.tabels.deutschebahn import RegisteredChannels
-
-logger = logging.getLogger(__name__)
-
-
-def _load_config():
-    with open("config/config.yml", "r", encoding="utf-8") as file:
-        return yaml.safe_load(file)["cogs"]["deutschebahn"]
+from bot.cogs.deutschebahn.rs_api.api import RS
+from bot.cogs.deutschebahn.station import Station
+from bot.config import config
+from bot.database.database import engine
+from bot.database.models.deutschebahn import RegisteredChannels
+from bot.logger import logger
 
 
 class DeutscheBahnCog(commands.Cog):
@@ -46,8 +39,7 @@ class DeutscheBahnCog(commands.Cog):
         channel_id = ctx.message.channel.id
         if self.session.query(RegisteredChannels).filter_by(id=channel_id).first():
             logger.warning(
-                "Channel %s is already subscribed to station of the day",
-                ctx.channel.name,
+                f"Channel {ctx.channel.name} is already subscribed to station of the day"
             )
             await ctx.send(
                 f"Kanal {ctx.channel.name} ist schon angemeldet", delete_after=10
@@ -55,7 +47,7 @@ class DeutscheBahnCog(commands.Cog):
         else:
             self.session.add(RegisteredChannels(id=channel_id))
             self.session.commit()
-            logger.info("Channel %s subscribed to station of the day", ctx.channel.name)
+            logger.info(f"Channel {ctx.channel.name} subscribed to station of the day")
             await ctx.send(
                 f"Kanal {ctx.channel.name} ist angemeldet, für Station des Tages",
                 delete_after=10,
@@ -76,8 +68,7 @@ class DeutscheBahnCog(commands.Cog):
             is None
         ):
             logger.warning(
-                "Channel %s is not subscribed to station of the day, unsubscribe not possible",
-                ctx.channel.name,
+                f"Channel {ctx.channel.name} is not subscribed to station of the day, unsubscribe not possible"
             )
             await ctx.send(
                 f"Kanal {ctx.channel.name} ist nicht angemeldet, abmelden nicht möglich",
@@ -89,7 +80,7 @@ class DeutscheBahnCog(commands.Cog):
             )
             self.session.commit()
             logger.info(
-                "Channel %s unsubscribed to station of the day", ctx.channel.name
+                f"Channel {ctx.channel.name} unsubscribed to station of the day"
             )
             await ctx.send(
                 f"Kanal {ctx.channel.name} ist abgemeldet, für Station des Tages",
@@ -97,14 +88,14 @@ class DeutscheBahnCog(commands.Cog):
             )
         await ctx.message.delete(delay=10)
 
-    @tasks.loop(time=datetime.time(hour=_load_config()["hour"]))
+    @tasks.loop(time=datetime.time(hour=config.hour))
     async def message_of_the_day_task(self):
         logger.info("running station of the day task")
         description, photos = await self.station.get_station_of_the_day()
         for channel_id in self.session.query(RegisteredChannels).all():
             logger.info(channel_id)
             if (channel := self.bot.get_channel(channel_id.id)) is not None:
-                logger.info("sending station of the day to: %s", channel)
+                logger.info(f"sending station of the day to: {channel}")
                 await channel.send(embed=description)
                 await channel.send(embeds=photos)
         await asyncio.sleep(10)

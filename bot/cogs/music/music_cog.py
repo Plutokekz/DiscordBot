@@ -1,22 +1,20 @@
-from typing import Dict, Any, List
-import logging
+from typing import Dict, List
 import datetime
 
 import discord
-import yaml
 import yt_dlp.YoutubeDL
 from discord.ext import commands
 from discord.ext.commands import MissingAnyRole, CommandNotFound
 from discord.utils import get
 from sqlalchemy.orm import Session
 
-from cogs.music.player import MusicPlayer
-from cogs.music.online.youtube_dl import AudioSource, YTDLError
-from cogs.utlis import check_roles
-from database.database import engine
-from database.tabels.musicplayer import SongRequest
-
-logger = logging.getLogger(__name__)
+from bot.cogs.music.player import MusicPlayer
+from bot.cogs.music.online.youtube_dl import AudioSource, YTDLError
+from bot.cogs.utlis import check_roles
+from bot.database.database import engine
+from bot.database.models.musicplayer import SongRequest
+from bot.logger import logger
+from bot.config import config
 
 
 class VoiceConnectionError(commands.CommandError):
@@ -27,22 +25,15 @@ class InvalidVoiceChannel(VoiceConnectionError):
     """Exception for cases of invalid Voice Channels."""
 
 
-def _load_config():
-    with open("config/config.yml", "r", encoding="utf-8") as file:
-        return yaml.safe_load(file)["cogs"]["music"]
-
-
 class Player(commands.Cog):
     __slots__ = ("bot", "players", "config")
 
     bot: commands.Bot
     players: Dict[int, MusicPlayer]
-    config: Dict[str, Any]
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.players = {}
-        self.config = _load_config()
         self.session = Session(engine)
 
     @commands.command(name="play")
@@ -54,10 +45,7 @@ class Player(commands.Cog):
         A list of these sites can be found here: https://rg3.github.io/youtube-dl/supportedsites.html
         """
         logger.info(
-            "%s trying to play %s in %s",
-            ctx.message.author.name,
-            search,
-            ctx.message.channel.name,
+            f"{ctx.message.author.name} trying to play {search} in {ctx.message.channel.name}"
         )
         if not ctx.voice_client:
             await self.connect(ctx)
@@ -68,11 +56,11 @@ class Player(commands.Cog):
                 search,
                 ctx=ctx,
                 loop=ctx.bot.loop,
-                ffmpeg_options=self.config["online"]["ffmpeg_options"],
-                ytdl=yt_dlp.YoutubeDL(self.config["online"]["ytdl_format_options"]),
-                default_info=self.config["online"]["default_info"],
+                ffmpeg_options=config.ffmpeg_options,
+                ytdl=yt_dlp.YoutubeDL(config.ytdl_format_options),
+                default_info=config.default_info,
             ):
-                logger.info("%s is queuing %s", ctx.message.author.name, source.title)
+                logger.info(f"{ctx.message.author} is queuing {source.title}")
                 await player.queue.put(source)
                 await self.add_request_to_database(ctx, source)
         await ctx.message.delete(delay=10)
@@ -105,13 +93,13 @@ class Player(commands.Cog):
         player = self.get_player(ctx)
         if ctx.voice_client is None or player.voice_client is None:
             player.voice_client = await channel.connect()
-            logger.info("%s connect with %s", self.bot.user.name, channel)
+            logger.info(f"{self.bot.user.name} connect with {channel}")
             await ctx.send(f"Is am Bahnsteig **{channel}** erschienen", delete_after=10)
             return
         if player.voice_client.channel.id == channel.id:
             return
         await player.voice_client.move_to(channel)
-        logger.info("%s moved to %s", self.bot.user.name, channel)
+        logger.info(f"{self.bot.user.name} moved to {channel}")
         await ctx.send(f"Gleis wechsel zu: **{channel}**", delete_after=10)
 
     @commands.command(name="pause")
@@ -122,7 +110,7 @@ class Player(commands.Cog):
             player.voice_client.pause()
             emoji = get(self.bot.emojis, name="DarksideDeutscheBahn")
             await ctx.message.add_reaction(emoji)
-            logger.info("%s paused", ctx.message.author.name)
+            logger.info(f"{ctx.message.author.name} paused")
         await ctx.message.delete(delay=10)
 
     @commands.command(name="resume")
@@ -133,7 +121,7 @@ class Player(commands.Cog):
             player.voice_client.resume()
             emoji = get(self.bot.emojis, name="DeutscheBahn")
             await ctx.message.add_reaction(emoji)
-            logger.info("%s resumed", ctx.message.author.name)
+            logger.info(f"{ctx.message.author.name} resumed")
         await ctx.message.delete(delay=10)
 
     @commands.command(name="skip")
@@ -141,7 +129,7 @@ class Player(commands.Cog):
         player = self.get_player(ctx)
         if player.voice_client and player.voice_client.is_playing():
             player.voice_client.stop()
-            logger.info("%s skipped", ctx.message.author.name)
+            logger.info(f"{ctx.message.author.name} skipped")
         await ctx.message.delete(delay=10)
 
     @commands.command(name="stop")
@@ -150,7 +138,7 @@ class Player(commands.Cog):
         player = self.get_player(ctx)
         if player.voice_client and player.voice_client.is_connected():
             emoji = get(self.bot.emojis, name="SaltyCaptin")
-            logger.info("%s stopped", ctx.message.author.name)
+            logger.info(f"{ctx.message.author.name} stopped")
             await ctx.message.add_reaction(emoji)
             await self.cleanup(ctx.guild)
             await self.bot.change_presence(activity=discord.Activity())
@@ -160,12 +148,12 @@ class Player(commands.Cog):
         try:
             await guild.voice_client.disconnect(force=True)
         except AttributeError as e:
-            logger.warning("Error in cleanup, disconnection the client: %s", e)
+            logger.warning(f"Error in cleanup, disconnection the client: {e}")
 
         try:
             del self.players[guild.id]
         except KeyError as e:
-            logger.warning("Error in cleanup, removing the player from Players: %s", e)
+            logger.warning(f"Error in cleanup, removing the player from Players: {e}")
 
     def cog_check(self, ctx: commands.Context) -> bool:
         """A local check which applies to all commands in this cog."""
@@ -178,31 +166,29 @@ class Player(commands.Cog):
     async def cog_command_error(self, ctx: commands.Context, error: Exception) -> None:
         """A local error handler for all errors arising from commands in this cog."""
         name = ctx.message.author.name
-        logger.error("An error %s", error)
+        logger.error(f"An error {error}")
         if isinstance(error, commands.NoPrivateMessage):
-            logger.error(
-                "%s is trying to run a command in Private chat %s", name, error
-            )
+            logger.error(f"{name} is trying to run a command in Private chat {error}")
             await self._send_error_msg(
                 ctx, "Sie können diesen befehl nur in der Deutschen Bahn nutzen"
             )
         elif isinstance(error, MissingAnyRole):
-            logger.error("%s is missing a role: %s", name, error)
+            logger.error(f"{name} is missing a role: {error}")
             await self._send_error_msg(
                 ctx, f"{name} you have no permission for that command"
             )
         elif isinstance(error, VoiceConnectionError):
-            logger.error("%s is currently not in a voice channel", name)
+            logger.error(f"{name} is currently not in a voice channel")
             await self._send_error_msg(
                 ctx, f"{name}, Sie befinden sich nicht ein einem Sprach Kanal"
             )
         elif isinstance(error, YTDLError):
             logger.error(
-                "An error occurred while processing this youtube_dl query: %s", error
+                f"An error occurred while processing this youtube_dl query: {error}"
             )
             await self._send_error_msg(ctx, "Durchsage nicht möglich")
         elif isinstance(error, CommandNotFound):
-            logger.error("Command not found: %s", error)
+            logger.error(f"Command not found: {error}")
         await ctx.message.delete(delay=10)
 
     def get_player(self, ctx: commands.Context) -> MusicPlayer:
@@ -219,6 +205,7 @@ class Player(commands.Cog):
             title=source.title,
             requester_id=ctx.message.author.id,
             web_page=source.web_page,
+            server_id=ctx.guild.id,
         )
         self.session.add(request)
         self.session.commit()

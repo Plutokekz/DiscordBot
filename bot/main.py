@@ -1,22 +1,23 @@
 import asyncio
 import logging
+from bot.logger import logger
 import os
 import discord
 from discord.ext import commands
+from bot.logger import logger
 
-logger = logging.getLogger(__name__)
 discord.utils.setup_logging(level=logging.INFO, root=True)
 
 
 TOKEN = os.environ["DiscordToken"]
 intents = discord.Intents.all()
 # test the integration
-client = commands.Bot(".", intents=intents)
+client = commands.Bot("!", intents=intents)
 
 
 @client.event
 async def on_ready():
-    logger.info("We have logged in as %s", client.user.name)
+    logger.info(f"We have logged in as {client.user.name}")
 
 
 async def main():
@@ -26,7 +27,7 @@ async def main():
         "cogs.mvg.mvg_cog",
     ]:
         await client.load_extension(extension)
-        logger.info("loaded extension: %s", extension)
+        logger.info(f"loaded extension: {extension}")
     await client.start(TOKEN)
 
 

@@ -1,13 +1,12 @@
 import asyncio
 from typing import Dict, Any
-import logging
 
 import discord
 import yt_dlp
 from discord.ext import commands
 from yt_dlp import YoutubeDL
 
-logger = logging.getLogger(__name__)
+from bot.logger import logger
 
 # Suppress noise about console usage from errors
 yt_dlp.utils.bug_reports_message = lambda: ""
@@ -94,7 +93,7 @@ class AudioSource(discord.PCMVolumeTransformer):
         filename = (
             processed_info["url"] if stream else ytdl.prepare_filename(processed_info)
         )
-        logger.info("Creating new source %s, %s", info.get("title"), filename)
+        logger.info(f"Creating new source {info.get('title')}, {filename}")
         return cls(
             discord.FFmpegPCMAudio(filename, **ffmpeg_options), ctx=ctx, data=info
         )

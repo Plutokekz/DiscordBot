@@ -1,20 +1,17 @@
-import logging
 import datetime
 
 import discord
 import httpx
-import yaml
 from discord.ext import commands, tasks
-from mvg_api.models.ticker import Ticker
-from mvg_api.mvg import AsyncMVG
+from mvg_api.v1.schemas.ticker import Ticker
+from mvg_api.v1.mvg import AsyncMVG
 from sqlalchemy import delete
 from sqlalchemy.orm import Session
 from markdownify import MarkdownConverter
 
-from database.database import engine
-from database.tabels.mvg import RegisteredChannelWithMessageId
-
-logger = logging.getLogger(__name__)
+from bot.database.database import engine
+from bot.database.models.mvg import RegisteredChannelWithMessageId
+from bot.logger import logger
 
 
 class MyMarkdownConverter(MarkdownConverter):
@@ -42,11 +39,6 @@ class TypeOfTransportConverter(commands.Converter):
 
 
 md = MyMarkdownConverter(bullets=[">"])
-
-
-def _load_config():
-    with open("config/config.yml", "r", encoding="utf-8") as file:
-        return yaml.safe_load(file)["cogs"]["deutschebahn"]
 
 
 class MVGCog(commands.Cog):
@@ -77,8 +69,7 @@ class MVGCog(commands.Cog):
             .first()
         ):
             logger.warning(
-                "Channel %s is already subscribed to station of the day",
-                ctx.channel.name,
+                f"Channel {ctx.channel.name} is already subscribed to station of the day"
             )
             await ctx.send(
                 f"Kanal {ctx.channel.name} ist schon angemeldet", delete_after=10
@@ -89,9 +80,7 @@ class MVGCog(commands.Cog):
                 RegisteredChannelWithMessageId(id=channel_id, message_id=message.id)
             )
             self.session.commit()
-            logger.info(
-                "Channel %s subscribed to slim message ticker", ctx.channel.name
-            )
+            logger.info(f"Channel {ctx.channel.name} subscribed to slim message ticker")
             await ctx.send(
                 f"Kanal {ctx.channel.name} ist angemeldet, für MVG Störungs Ticker",
                 delete_after=10,
@@ -114,8 +103,7 @@ class MVGCog(commands.Cog):
             is None
         ):
             logger.warning(
-                "Channel %s is not subscribed to mvg ticker, unsubscribe not possible",
-                ctx.channel.name,
+                f"Channel {ctx.channel.name} is not subscribed to mvg ticker, unsubscribe not possible"
             )
             await ctx.send(
                 f"Kanal {ctx.channel.name} ist nicht angemeldet, abmelden nicht möglich",
@@ -137,7 +125,7 @@ class MVGCog(commands.Cog):
                 )
             )
             self.session.commit()
-            logger.info("Channel %s unsubscribed mvg ticker", ctx.channel.name)
+            logger.info(f"Channel {ctx.channel.name} unsubscribed mvg ticker")
             await ctx.send(
                 f"Kanal {ctx.channel.name} ist abgemeldet, für MVG störungs ticker",
                 delete_after=10,
@@ -148,7 +136,7 @@ class MVGCog(commands.Cog):
         try:
             slim_list = await self.api.get_slim()
         except httpx.HTTPError as e:
-            logger.error("Error while fetching slim list: %s", e)
+            logger.error(f"Error while fetching slim list: {e}")
             return discord.Embed(
                 colour=discord.Colour.red(),
                 color=discord.Color.red(),
@@ -157,7 +145,7 @@ class MVGCog(commands.Cog):
                 timestamp=datetime.datetime.now(),
                 url="https://www.mvg.de/dienste/betriebsaenderungen.html",
             ).set_footer(text="Letzte Aktualisierung")
-        if len(slim_list.__root__) == 0:
+        if len(slim_list) == 0:
             return discord.Embed(
                 colour=discord.Colour.yellow(),
                 color=discord.Color.yellow(),
@@ -169,8 +157,10 @@ class MVGCog(commands.Cog):
                 url="https://www.mvg.de/dienste/betriebsaenderungen.html",
             ).set_footer(text="Letzte Aktualisierung")
 
-        description = f"Es liegen momentan {len(slim_list.__root__)} Betriebsmeldungen oder Störungen vor."
-        if len(slim_list.__root__) == 1:
+        description = (
+            f"Es liegen momentan {len(slim_list)} Betriebsmeldungen oder Störungen vor."
+        )
+        if len(slim_list) == 1:
             description = "Es liegt folgende Betriebsmeldung oder Störung vor"
 
         embed = discord.Embed(
@@ -182,7 +172,7 @@ class MVGCog(commands.Cog):
             timestamp=datetime.datetime.now(),
         )
         embed.set_footer(text="Letzte Aktualisierung um")
-        for slim in slim_list.__root__:
+        for slim in slim_list:
             embed.add_field(name="Störung", value=slim.title)
         return embed
 
@@ -256,9 +246,15 @@ class MVGCog(commands.Cog):
             RegisteredChannelWithMessageId
         ).all():
             channel = self.bot.get_channel(channel_id_message_id.id)
-            message = await channel.fetch_message(channel_id_message_id.message_id)
+            try:
+                message = await channel.fetch_message(channel_id_message_id.message_id)
+            except discord.NotFound as e:
+                logger.error(
+                    f"Error while fetching message {channel_id_message_id.message_id} in channel {channel.id}: {e}"
+                )
+                continue
             logger.info(
-                "Updating Slim in channel %s with message %s", channel.name, message.id
+                f"Updating Slim in channel {channel.name} with message {message.id}"
             )
             await message.edit(embed=slim)
 

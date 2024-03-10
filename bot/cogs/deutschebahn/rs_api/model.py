@@ -7,7 +7,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import List, Optional
 
-from pydantic import AnyUrl, BaseModel, Field
+from pydantic import AnyUrl, BaseModel, Field, RootModel
 
 
 class Type(Enum):
@@ -44,8 +44,7 @@ class Country(BaseModel):
     )
 
 
-class CountryList(BaseModel):
-    __root__: List[Country]
+CountryList = RootModel[List[Country]]
 
 
 class License(BaseModel):

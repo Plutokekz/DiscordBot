@@ -1,14 +1,11 @@
-import logging
 from datetime import datetime
 import random
 from typing import List, Tuple
 
 import discord
 from discord.embeds import Embed
-from cogs.deutschebahn.rs_api.api import RS
-from cogs.deutschebahn.rs_api.model import Station as ST
-
-logger = logging.getLogger(__name__)
+from bot.cogs.deutschebahn.rs_api.api import RS
+from bot.cogs.deutschebahn.rs_api.model import Station as ST
 
 
 class Station:

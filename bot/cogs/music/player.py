@@ -1,17 +1,16 @@
 from __future__ import annotations
 
 import asyncio
-import logging
-from typing import Coroutine
+from asyncio import timeout
+from typing import Coroutine, TYPE_CHECKING
 
 import discord
-from async_timeout import timeout
 from discord.ext import commands
 
-import cogs.music.music_cog as mc
-from cogs.music.online.youtube_dl import AudioSource
-
-logger = logging.getLogger(__name__)
+if TYPE_CHECKING:
+    import bot.cogs.music.music_cog as mc
+from bot.cogs.music.online.youtube_dl import AudioSource
+from bot.logger import logger
 
 
 class MusicPlayer:
@@ -64,7 +63,7 @@ class MusicPlayer:
                 async with timeout(100):
                     audio_source = await self.queue.get()
             except asyncio.TimeoutError as e:
-                logger.error("cant get audio source from queue Timeout: %s", e)
+                logger.error(f"cant get audio source from queue Timeout: {e}")
                 task = self.destroy(self.guild)
                 self.creat_referenced_task(task)
                 return task
@@ -75,20 +74,20 @@ class MusicPlayer:
                 self.voice_client.play(
                     audio_source,
                     after=lambda error: (
-                        logger.warning("error while playing: %s", error),
+                        logger.warning(f"error while playing: {error}", error),
                         self.creat_referenced_task(
                             self.bot.change_presence(activity=discord.Activity())
                         ),
                         self.bot.loop.call_soon_threadsafe(self.next.set),
                     ),
                 )
-                logger.info("playing %s", self.current.title)
+                logger.info(f"playing {self.current.title}")
                 await self.channel.send(embed=audio_source.to_embed(), delete_after=30)
             await self.next.wait()
             try:
                 audio_source.cleanup()
             except ValueError as e:
-                logger.error("error while cleaning up audio source: %s", e)
+                logger.error(f"error while cleaning up audio source: {e}")
             self.current = None
 
     def creat_referenced_task(self, coro: Coroutine):
